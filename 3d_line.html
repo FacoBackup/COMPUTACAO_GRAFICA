@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+   window.onload = () => {
+       const TO_RAD = Math.PI/180
+       const canvas = document.getElementById('canvas')
+       const context =  canvas.getContext('2d')
+
+
+       const v1 = [8, 10, 1]
+       const v2 = [140, 2, -40]
+       const PROJECTION_MATRIX = perspective()
+       function perspective() {
+           const fovy = 90 * TO_RAD,
+               aspect = 1,
+               near = .1,
+               far = 1000
+           const out = new Array(16).fill(0)
+           const f = 1.0 / Math.tan(fovy / 2),
+               nf = 1 / (near - far)
+
+           out[0] = f / aspect;
+           out[5] = f;
+           out[11] = -1;
+
+           out[10] = (far + near) * nf;
+           out[14] = 2 * far * near * nf;
+
+           return out;
+       }
+
+       function project(a) {
+           const m = PROJECTION_MATRIX
+           const out = []
+           let x = a[0],
+               y = a[1],
+               z = a[2],
+               w = 1;
+
+           out[0] = m[0] * x + m[4] * y + m[8] * z + m[12] * w;
+           out[1] = m[1] * x + m[5] * y + m[9] * z + m[13] * w;
+           out[2] = m[2] * x + m[6] * y + m[10] * z + m[14] * w;
+           out[3] = m[3] * x + m[7] * y + m[11] * z + m[15] * w;
+
+           return out;
+
+       }
+
+
+       const rasterLine = (p1, p2, onSegment) => {
+           const p = perspective()
+           const xX = Math.abs(p1[0] - p2[0])
+           const yY = Math.abs(p1[1] - p2[1])
+           const zZ = Math.abs(p1[2] - p2[2])
+           const n = Math.max(xX, yY, zZ)
+           const deltaT = 1/n
+
+           for(let i = 0; i < n; i++){
+               const incrementP1 = (1 - deltaT * i),
+                   incrementP2 = deltaT * i
+               const point = project([p1[0] * incrementP1 + p2[0] * incrementP2, p1[1] * incrementP1 + p2[1] * incrementP2, p1[2] * incrementP1 + p2[2] * incrementP2], p)
+
+               context.fillStyle = `hsl(0, 100%, calc(50% - ${point[2]}%))`
+               context.beginPath()
+               context.arc(point[0], point[1], 2, 0, Math.PI * 2)
+               context.fill()
+               context.closePath()
+               if(onSegment)
+               onSegment(point)
+           }
+       }
+
+       rasterLine(v1, v2)
+   }
+</script>
+<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>

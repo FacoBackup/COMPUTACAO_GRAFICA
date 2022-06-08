@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+   window.onload = () => {
+       const canvas = document.getElementById('canvas')
+       const context =  canvas.getContext('2d')
+       context.fillStyle = 'red'
+
+       const v1 = [8, 10]
+       const v2 = [140, 110]
+       const v3 = [15, 160]
+
+       const rasterLine = (p1, p2, onSegment) => {
+           const xX = Math.abs(p1[0] - p2[0])
+           const yY = Math.abs(p1[1] - p2[1])
+           const n = xX > yY ? xX : yY
+           const deltaT = 1/n
+
+           for(let i = 0; i < n; i++){
+               const incrementP1 = (1 - deltaT * i),
+                   incrementP2 = deltaT * i
+               const point = [p1[0] * incrementP1 + p2[0] * incrementP2, p1[1] * incrementP1 + p2[1] * incrementP2]
+               
+               context.beginPath()
+               context.arc(point[0], point[1], 2, 0, Math.PI * 2)
+               context.fill()
+               context.closePath()
+               if(onSegment)
+               onSegment(point)
+           }
+       }
+
+       const vecDist = (v1, v2) => {
+           const vec = [v1[0] - v2[0], v1[1] - v2[1]]
+           return Math.sqrt(vec[0] ** 2 + vec[1] ** 2)
+       }
+
+       const loopTriangle = (a, b, c) => {
+           rasterLine(a, b, point => {
+               rasterLine(point, c)
+           })
+       }
+       const drawTriangle = (p1, p2, p3) => {
+           const ab = vecDist(p1, p2)
+           const bc = vecDist(p2, p3)
+
+           if(ab > bc){
+               loopTriangle(p1, p2, p3)
+           }
+           else{
+               loopTriangle(p2, p3, p1)
+           }
+       }
+       drawTriangle(v1, v2, v3)
+   }
+</script>
+<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
