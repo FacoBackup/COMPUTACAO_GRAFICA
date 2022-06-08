@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script>
+    function draw(){
+        const canvas = document.getElementById('canvas-draw')
+        const context =  canvas.getContext('2d')
+        context.rect(0,0,canvas.width, canvas.height)
+        context.fillStyle = "black"
+        context.fill()
+
+        const bBox = canvas.getBoundingClientRect()
+        context.fillStyle = "white"
+        context.strokeStyle = "white"
+        context.lineWidth = 2
+        canvas.addEventListener("mousedown", (event) => {
+            let last = [event.clientX- bBox.x, event.clientY- bBox.y]
+
+            const handler = ({clientX, clientY}) => {
+                context.beginPath()
+                const newPos = [clientX - bBox.x, clientY - bBox.y]
+                context.moveTo(last[0], last[1])
+                context.lineTo(newPos[0], newPos[1])
+                context.stroke()
+                context.closePath()
+
+                last = newPos
+            }
+            document.addEventListener('mouseup', () => {
+                canvas.removeEventListener("mousemove", handler)
+            }, {once: true})
+
+            canvas.addEventListener("mousemove", handler)
+        })
+    }
+   window.onload = () => {
+       draw()
+
+   }
+</script>
+<canvas id="canvas-draw" width="500" height="500"></canvas>
+<canvas id="canvas" width="500" height="500"></canvas>
+</body>
+</html>
